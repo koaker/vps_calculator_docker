@@ -14,8 +14,8 @@
 
 // 图床默认配置
 const imgHost = {
-    type: "LskyPro", // 图床类型, 仅支持 LskyPro / EasyImages
-    url: "https://image.dooo.ng", // 图床地址, 带上协议头
-    token: "", // LskyPro 可为空则使用游客上传, 在 /user/tokens 生成
+    type: "NodeImage", // 图床类型, 支持 LskyPro / EasyImages / NodeImage
+    url: "https://api.nodeimage.com", // 图床地址, 带上协议头
+    token: "", // NodeImage 的 API 密钥
     copyFormat: "markdown" // 默认为URL格式
 };

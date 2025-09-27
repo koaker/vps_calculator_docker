@@ -361,8 +361,8 @@ function saveSettings() {
 function resetSettings() {
     if (confirm('确定要恢复默认设置吗？')) {
         // 使用对象属性更新
-        imgHost.type = "LskyPro";
-        imgHost.url = "https://image.dooo.ng";
+        imgHost.type = "NodeImage";
+        imgHost.url = "https://api.nodeimage.com";
         imgHost.token = "";
         imgHost.copyFormat = "markdown";
         

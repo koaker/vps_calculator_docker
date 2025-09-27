@@ -101,8 +101,11 @@ function uploadImage(imageData) {
         case 'EasyImages':
             uploadToEasyImages(file);
             break;
+        case 'NodeImage':
+            uploadToNodeImage(file);
+            break;
         default:
-            showNotification(`不支持的图床类型: ${imgHost.type}，请设置为 LskyPro 或 EasyImages`, 'error');
+            showNotification(`不支持的图床类型: ${imgHost.type}，请设置为 LskyPro、EasyImages 或 NodeImage`, 'error');
     }
 }
 
@@ -220,5 +223,68 @@ function uploadToEasyImages(file) {
     .catch(error => {
         console.error('上传图片失败:', error);
         showNotification('上传图片失败，请重试', 'error');
+    });
+}
+
+/**
+ * 上传到 NodeImage 图床
+ * @param {File} file - 要上传的文件
+ */
+function uploadToNodeImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const headers = {
+        'Accept': 'application/json'
+    };
+
+    if (imgHost.token) {
+        headers['X-API-Key'] = imgHost.token;
+    }
+    
+    fetch(`${imgHost.url}/api/upload`, {
+        method: 'POST',
+        headers: headers,
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP error! Status: ${response.status}, Body: ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // API 文档说明 "返回多种格式的链接"，这里假设返回的 JSON 结构中包含可直接使用的 URL
+        let imageUrl = null;
+        if (data && data.data && data.data.links && data.data.links.url) {
+            imageUrl = data.data.links.url; // 类似 LskyPro 的结构
+        } else if (data && data.url) { // 简单的 { "url": "..." } 结构
+            imageUrl = data.url;
+        }
+
+        if (imageUrl) {
+            let clipboardText = imageUrl;
+            
+            // 如果设置为Markdown格式，则生成Markdown格式的文本
+            if (imgHost.copyFormat === 'markdown') {
+                clipboardText = `![剩余价值计算结果](${imageUrl})`;
+            }
+            
+            // 复制到剪贴板
+            copyToClipboard(clipboardText);
+            
+            // 显示通知，指明使用了哪种格式
+            const formatText = imgHost.copyFormat === 'markdown' ? 'Markdown格式' : '链接';
+            showNotification(`截图上传成功，${formatText}已复制到剪贴板！`, 'success');
+        } else {
+            showNotification('图片上传失败，无法从响应中获取图片链接', 'error');
+            console.error('上传响应异常:', data);
+        }
+    })
+    .catch(error => {
+        console.error('上传图片失败:', error);
+        showNotification('上传图片失败，请检查控制台获取更多信息', 'error');
     });
 }
